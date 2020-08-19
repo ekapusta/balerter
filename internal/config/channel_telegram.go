@@ -6,21 +6,10 @@ import (
 	"time"
 )
 
-type ProxyConfig struct {
-	Address string           `json:"address" yaml:"address"`
-	Auth    *ProxyAuthConfig `json:"auth" yaml:"auth"`
-}
-
-type ProxyAuthConfig struct {
-	Username string `json:"username" yaml:"username"`
-	Password string `json:"password" yaml:"password"`
-}
-
 type ChannelTelegram struct {
 	Name    string        `json:"name" yaml:"name"`
 	Token   string        `json:"token" yaml:"token"`
 	ChatID  int64         `json:"chatId" yaml:"chatId"`
-	Proxy   *ProxyConfig  `json:"proxy"`
 	Timeout time.Duration `json:"timeout" yaml:"timeout"`
 }
 

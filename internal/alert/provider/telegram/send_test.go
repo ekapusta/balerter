@@ -2,8 +2,7 @@ package telegram
 
 import (
 	"github.com/balerter/balerter/internal/alert/message"
-	"github.com/balerter/balerter/internal/alert/provider/telegram/api"
-	"github.com/stretchr/testify/assert"
+	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api"
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/require"
 	"go.uber.org/zap"
@@ -14,23 +13,17 @@ type apiMock struct {
 	mock.Mock
 }
 
-func (m *apiMock) SendTextMessage(mes *api.TextMessage) error {
-	args := m.Called(mes)
-	return args.Error(0)
+func (m *apiMock) Send(c tgbotapi.Chattable) (tgbotapi.Message, error) {
+	args := m.Called(c)
+
+	msg := tgbotapi.Message{}
+	err := args.Error(1)
+	return msg, err
 }
 
-func (m *apiMock) SendPhotoMessage(mes *api.PhotoMessage) error {
-	args := m.Called(mes)
-	return args.Error(0)
-}
-
-func TestSend_WithoutImage(t *testing.T) {
-	var tgMessage *api.TextMessage
-
+func TestSend(t *testing.T) {
 	m := &apiMock{}
-	m.On("SendTextMessage", mock.Anything).Run(func(args mock.Arguments) {
-		tgMessage = args.Get(0).(*api.TextMessage)
-	}).Return(nil)
+	m.On("Send", mock.Anything).Return(nil)
 
 	tg := &Telegram{
 		api:    m,
@@ -48,43 +41,4 @@ func TestSend_WithoutImage(t *testing.T) {
 
 	err := tg.Send(mes)
 	require.NoError(t, err)
-
-	m.AssertCalled(t, "SendTextMessage", mock.Anything)
-	require.NotNil(t, tgMessage)
-	assert.Equal(t, "baz", tgMessage.Text)
-	assert.Equal(t, int64(42), tgMessage.ChatID)
-}
-
-func TestSend_WithImage(t *testing.T) {
-	var tgMessage *api.PhotoMessage
-
-	m := &apiMock{}
-	m.On("SendTextMessage", mock.Anything).Return(nil)
-	m.On("SendPhotoMessage", mock.Anything).Run(func(args mock.Arguments) {
-		tgMessage = args.Get(0).(*api.PhotoMessage)
-	}).Return(nil)
-
-	tg := &Telegram{
-		api:    m,
-		logger: zap.NewNop(),
-		chatID: 42,
-	}
-
-	mes := &message.Message{
-		Level:     "foo",
-		AlertName: "bar",
-		Text:      "baz",
-		Fields:    []string{"f1", "f2"},
-		Image:     "img1",
-	}
-
-	err := tg.Send(mes)
-	require.NoError(t, err)
-
-	m.AssertCalled(t, "SendTextMessage", mock.Anything)
-	m.AssertCalled(t, "SendPhotoMessage", mock.Anything)
-	require.NotNil(t, tgMessage)
-	assert.Equal(t, int64(42), tgMessage.ChatID)
-	assert.Equal(t, "", tgMessage.Caption)
-	assert.Equal(t, "img1", tgMessage.Photo)
 }

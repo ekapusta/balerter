@@ -2,21 +2,20 @@ package telegram
 
 import (
 	"fmt"
-	"github.com/balerter/balerter/internal/alert/provider/telegram/api"
 	"github.com/balerter/balerter/internal/config"
+	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api"
 	"go.uber.org/zap"
 )
 
-type APIer interface {
-	SendTextMessage(*api.TextMessage) error
-	SendPhotoMessage(*api.PhotoMessage) error
+type API interface {
+	Send(c tgbotapi.Chattable) (tgbotapi.Message, error)
 }
 
 type Telegram struct {
 	name   string
 	chatID int64
 	logger *zap.Logger
-	api    APIer
+	api    API
 }
 
 func New(cfg *config.ChannelTelegram, logger *zap.Logger) (*Telegram, error) {
@@ -27,11 +26,10 @@ func New(cfg *config.ChannelTelegram, logger *zap.Logger) (*Telegram, error) {
 	}
 
 	var err error
-
-	tg.api, err = api.New(cfg)
+	tg.api, err = tgbotapi.NewBotAPI(cfg.Token)
 
 	if err != nil {
-		return nil, fmt.Errorf("error connect to bot API, %w", err)
+		return nil, fmt.Errorf("error create bot api, %w", err)
 	}
 
 	return tg, nil
