@@ -17,7 +17,7 @@ func TestManager_Init(t *testing.T) {
 	cfg := config.Channels{
 		Email:    []*config.ChannelEmail{{Name: "email1"}},
 		Slack:    []*config.ChannelSlack{{Name: "slack1"}},
-		Telegram: []*config.ChannelTelegram{{Name: "tg1"}},
+		Telegram: []*config.ChannelTelegram{{Name: "tg1", Token: "153667468:AAHlSHlMqSt1f_uFmVRJbm5gntu2HI4WW8I"}},
 		Syslog:   []*config.ChannelSyslog{{Name: "sl1", Network: "udp", Address: "127.0.0.1:2000"}},
 		Notify:   []*config.ChannelNotify{{Name: "n1"}},
 		Discord:  []*config.ChannelDiscord{{Name: "discord1"}},

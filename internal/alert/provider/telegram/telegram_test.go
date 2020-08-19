@@ -7,12 +7,21 @@ import (
 	"testing"
 )
 
+const (
+	TestToken               = "153667468:AAHlSHlMqSt1f_uFmVRJbm5gntu2HI4WW8I"
+	ChatID                  = 76918703
+)
+
 func TestNew(t *testing.T) {
-	tg, err := New(&config.ChannelTelegram{Name: "foo", ChatID: 42}, nil)
+	tg, err := New(&config.ChannelTelegram{
+		Name: "foo",
+		ChatID: ChatID,
+		Token: TestToken,
+	}, nil)
 	require.NoError(t, err)
 	assert.IsType(t, &Telegram{}, tg)
 	assert.Equal(t, "foo", tg.name)
-	assert.Equal(t, int64(42), tg.chatID)
+	assert.Equal(t, int64(ChatID), tg.chatID)
 }
 
 func TestName(t *testing.T) {

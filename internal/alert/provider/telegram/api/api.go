@@ -3,27 +3,29 @@ package api
 import (
 	"fmt"
 	"github.com/balerter/balerter/internal/config"
+	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api"
 	"golang.org/x/net/proxy"
 	"net/http"
 	"time"
 )
 
 const (
-	apiEndpoint              = "https://api.telegram.org/bot"
 	defaultHTTPClientTimeout = time.Second * 5
-
-	methodSendMessage = "sendMessage"
-	methodSendPhoto   = "sendPhoto"
 )
 
 type API struct {
-	endpoint   string
-	httpClient *http.Client
+	api        *tgbotapi.BotAPI
 }
 
 func New(cfg *config.ChannelTelegram) (*API, error) {
+	botAPI, err := tgbotapi.NewBotAPI(cfg.Token)
+
+	if err != nil {
+		return nil, fmt.Errorf("error create bot api, %w", err)
+	}
+
 	a := &API{
-		endpoint: apiEndpoint + cfg.Token + "/",
+		api: botAPI,
 	}
 
 	var tr *http.Transport
@@ -50,15 +52,10 @@ func New(cfg *config.ChannelTelegram) (*API, error) {
 		}
 	}
 
-	a.httpClient = &http.Client{
-		Transport:     tr,
-		CheckRedirect: nil,
-		Jar:           nil,
-		Timeout:       cfg.Timeout,
-	}
+	a.api.Client.Transport = tr
 
-	if a.httpClient.Timeout == 0 {
-		a.httpClient.Timeout = defaultHTTPClientTimeout
+	if a.api.Client.Timeout == 0 {
+		a.api.Client.Timeout = defaultHTTPClientTimeout
 	}
 
 	return a, nil
